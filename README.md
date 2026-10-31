@@ -1,56 +1,37 @@
-# Welcome to your Expo app 👋
+# Orders Admin
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mobile admin app for the Happy Store `orders` table in Supabase.
+Expo (SDK 58, TypeScript, Expo Router), supabase-js, TanStack Query.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run it
 
 ```bash
-npm run reset-project
+npm install
+cp .env.example .env      # then fill in your Supabase URL and anon key
+npx expo start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Scan the QR code with **Expo Go** (Android) or the Camera app (iOS), or press
+`i` / `a` for the iOS simulator / Android emulator. This app targets iOS and
+Android; web is not supported (SecureStore is mobile-only).
 
-### Other setup steps
+After changing `.env`, restart with `npx expo start --clear` so the new values
+are picked up.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Checks
 
-## Learn more
+```bash
+npm run typecheck
+npm run lint
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Where things live
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `src/app/` — screens (Expo Router). `(tabs)/` holds the tab bar screens.
+- `src/theme.ts` — colours, sizes and type from the mockup.
+- `src/strings.ts` — all UI text (add Arabic here later).
+- `src/format.ts` — money (`86.500 TND`) and date (`Today, 10:42`) formatting.
+- `src/features/orders/` — order statuses, colours, data access and hooks.
+- `src/lib/` — Supabase client, secure session storage, query client.
+- `supabase/migrations/` — SQL for Row Level Security. **Not applied automatically**: run it yourself.
+# happy_store_app_remote
