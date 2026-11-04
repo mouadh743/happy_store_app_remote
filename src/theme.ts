@@ -3,6 +3,10 @@
 
 export const colors = {
   background: '#F6F7F9',
+  // AppBackground gradient: tinted top fading into `background`, plus soft glows.
+  bgTop: '#E8EEFF',
+  glowViolet: '#8B5CF6',
+  glowTeal: '#14B8A6',
   surface: '#FFFFFF',
   border: '#E4E7EC',
   text: '#1A1D23',

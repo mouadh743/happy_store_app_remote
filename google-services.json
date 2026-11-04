@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "880155320400",
+    "project_id": "happystore-456c5",
+    "storage_bucket": "happystore-456c5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:880155320400:android:de9006ca6fd2092d89b155",
+        "android_client_info": {
+          "package_name": "com.happystore.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3inGn4P8pnAuwJkprLFQ8-W17mVgAE7M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

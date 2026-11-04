@@ -28,7 +28,12 @@ export function SettingsGroup({ title, footer, children }: GroupProps) {
           </Fragment>
         ))}
       </View>
-      {footer ? <Text style={styles.footer}>{footer}</Text> : null}
+      {footer ? (
+        // Selectable so error details can be copied and shared.
+        <Text style={styles.footer} selectable>
+          {footer}
+        </Text>
+      ) : null}
     </View>
   );
 }

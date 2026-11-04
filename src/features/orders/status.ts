@@ -1,7 +1,8 @@
 import { strings } from '@/strings';
 
-// Must match the CHECK constraint in supabase/migrations (step 2).
-export const ORDER_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] as const;
+// Must match orders_status_check in supabase/migrations (also written by the
+// happy_store checkout, which inserts every order as 'new').
+export const ORDER_STATUSES = ['new', 'paid', 'sent', 'cancelled'] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export function isOrderStatus(value: unknown): value is OrderStatus {
@@ -9,16 +10,14 @@ export function isOrderStatus(value: unknown): value is OrderStatus {
 }
 
 // Filter chips on the list screen ("all" = no status filter).
-export const STATUS_FILTERS = ['all', 'pending', 'shipped', 'delivered'] as const;
+export const STATUS_FILTERS = ['all', ...ORDER_STATUSES] as const;
 export type StatusFilter = (typeof STATUS_FILTERS)[number];
 
-// Pill colours from the mockup: pending amber, confirmed blue, shipped purple,
-// delivered green, cancelled red.
+// Pill colours: new amber, paid blue, sent green, cancelled red.
 export const STATUS_COLORS: Record<OrderStatus, { bg: string; text: string }> = {
-  pending: { bg: '#FFF1D6', text: '#7A4A00' },
-  confirmed: { bg: '#DCE9FF', text: '#12408F' },
-  shipped: { bg: '#E9E1FF', text: '#4A2A9B' },
-  delivered: { bg: '#D8F3E2', text: '#14602F' },
+  new: { bg: '#FFF1D6', text: '#7A4A00' },
+  paid: { bg: '#DCE9FF', text: '#12408F' },
+  sent: { bg: '#D8F3E2', text: '#14602F' },
   cancelled: { bg: '#FDE0E0', text: '#8F1D1D' },
 };
 
