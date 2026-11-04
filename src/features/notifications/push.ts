@@ -104,10 +104,11 @@ async function doRegister(): Promise<void> {
 
     // Insert-only: the app can't read or change other devices' tokens.
     step = 'save';
-    const { error } = await supabase
-      .from('push_tokens')
-      .upsert({ token, platform: Platform.OS }, { onConflict: 'token', ignoreDuplicates: true });
-    if (error) throw error;
+    // A plain insert, not an upsert: ON CONFLICT needs SELECT on the table,
+    // which the app's key deliberately doesn't have (42501). A duplicate (23505)
+    // just means this phone registered before.
+    const { error } = await supabase.from('push_tokens').insert({ token, platform: Platform.OS });
+    if (error && error.code !== '23505') throw error;
     setStatus({ state: 'registered' });
   } catch (error) {
     // Expected in Expo Go on Android and on simulators: no remote push there.
