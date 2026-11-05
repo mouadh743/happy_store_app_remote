@@ -17,15 +17,25 @@ export type OrderSummary = {
 export type OrderItem = { slug?: string; name?: string; price?: number | string };
 
 export type OrderDetail = OrderSummary & {
+  first_name: string | null;
+  last_name: string | null;
   phone: string | null;
   email: string | null;
+  governorate: string | null;
+  city: string | null;
   payment_method: string | null;
   note: string | null;
+  product: string | null; // product slug, or "bundle"
+  quantity: number | null;
   items: OrderItem[] | null; // jsonb
+  delivery_fee: number | string | null; // numeric
+  notified_at: string | null; // timestamptz, when the push went out
 };
 
 const SUMMARY_COLUMNS = 'id, ref, customer_name, total, status, created_at';
-const DETAIL_COLUMNS = `${SUMMARY_COLUMNS}, phone, email, payment_method, note, items`;
+const DETAIL_COLUMNS =
+  `${SUMMARY_COLUMNS}, first_name, last_name, phone, email, governorate, city, payment_method, ` +
+  'note, product, quantity, items, delivery_fee, notified_at';
 
 // Newest orders first. Status filter and search run on the device over this
 // set, so switching chips is instant; raise the cap if the store outgrows it.
@@ -102,6 +112,12 @@ export function useUpdateOrderStatus() {
       );
     },
   });
+}
+
+/** "First Last" from the new columns, falling back to the older `customer_name`. */
+export function customerName(order: Pick<OrderDetail, 'first_name' | 'last_name' | 'customer_name'>): string {
+  const full = [order.first_name, order.last_name].map((p) => p?.trim()).filter(Boolean).join(' ');
+  return full || order.customer_name?.trim() || '';
 }
 
 /** Order number shown to the admin: the store's ref ("HS-7K3Q9P"), else a short uuid. */

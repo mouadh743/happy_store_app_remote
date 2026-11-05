@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, type ScrollViewInstance } from 'react-native';
 
 import { STATUS_FILTERS, type StatusFilter } from '@/features/orders/status';
 import { strings } from '@/strings';
@@ -9,10 +10,22 @@ type Props = {
   onChange: (filter: StatusFilter) => void;
 };
 
-/** Horizontally scrolling "All / Pending / Shipped / Delivered" chips. */
+/** Horizontally scrolling "All / New / Paid / Sent / Cancelled" chips. */
 export function StatusFilterChips({ value, onChange }: Props) {
+  const scroll = useRef<ScrollViewInstance>(null);
+  const chipX = useRef<Partial<Record<StatusFilter, { x: number; width: number }>>>({});
+  const { width: screenWidth } = useWindowDimensions();
+
+  // Keep the selected chip in view (e.g. while swiping the list to "Cancelled").
+  useEffect(() => {
+    const chip = chipX.current[value];
+    if (!chip) return;
+    scroll.current?.scrollTo({ x: Math.max(0, chip.x + chip.width / 2 - screenWidth / 2), animated: true });
+  }, [value, screenWidth]);
+
   return (
     <ScrollView
+      ref={scroll}
       horizontal
       showsHorizontalScrollIndicator={false}
       style={styles.scroll}
@@ -23,6 +36,10 @@ export function StatusFilterChips({ value, onChange }: Props) {
           <Pressable
             key={filter}
             onPress={() => onChange(filter)}
+            onLayout={(e) => {
+              const { x, width } = e.nativeEvent.layout;
+              chipX.current[filter] = { x, width };
+            }}
             accessibilityRole="button"
             accessibilityState={{ selected }}
             // 36px chip + 4px above and below = 44px touch target.

@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -8,6 +8,7 @@ import { BackIcon, OrdersIcon } from '@/components/icons';
 import { PressableScale } from '@/components/PressableScale';
 import { Screen } from '@/components/Screen';
 import {
+  customerName,
   NotAllowedError,
   orderCode,
   useOrder,
@@ -83,6 +84,9 @@ function OrderBody({ order }: { order: OrderDetail }) {
   };
 
   const items = Array.isArray(order.items) ? order.items : [];
+  const hasAddress = Boolean(order.governorate?.trim() || order.city?.trim());
+  const deliveryFee = Number(order.delivery_fee ?? 0);
+  const phone = order.phone?.trim();
 
   let feedback: ReactNode = null;
   if (update.isError) {
@@ -109,14 +113,34 @@ function OrderBody({ order }: { order: OrderDetail }) {
 
       <Section index={1} title={strings.detail.customer}>
         <Card>
-          <Row label={strings.detail.customer} value={order.customer_name?.trim() || strings.orders.noName} />
-          {order.phone ? <Row label={strings.detail.phone} value={order.phone} /> : null}
-          {order.email ? <Row label={strings.detail.email} value={order.email} /> : null}
-          {order.payment_method ? <Row label={strings.detail.payment} value={order.payment_method} /> : null}
+          <Row label={strings.detail.name} value={customerName(order) || strings.orders.noName} />
+          {phone ? (
+            <Row
+              label={strings.detail.phone}
+              value={phone}
+              onPress={() => Linking.openURL(`tel:${phone.replace(/\s+/g, '')}`)}
+              accessibilityHint={strings.detail.callHint}
+            />
+          ) : null}
+          {order.email?.trim() ? <Row label={strings.detail.email} value={order.email.trim()} /> : null}
+          {order.payment_method?.trim() ? (
+            <Row label={strings.detail.payment} value={order.payment_method.trim()} />
+          ) : null}
         </Card>
       </Section>
 
-      <Section index={2} title={strings.detail.items}>
+      {hasAddress ? (
+        <Section index={2} title={strings.detail.delivery}>
+          <Card>
+            {order.governorate?.trim() ? (
+              <Row label={strings.detail.governorate} value={order.governorate.trim()} />
+            ) : null}
+            {order.city?.trim() ? <Row label={strings.detail.city} value={order.city.trim()} /> : null}
+          </Card>
+        </Section>
+      ) : null}
+
+      <Section index={3} title={strings.detail.items}>
         <Card>
           {items.map((item, i) => (
             <Row
@@ -125,19 +149,25 @@ function OrderBody({ order }: { order: OrderDetail }) {
               value={formatMoney(item.price)}
             />
           ))}
+          {order.product?.trim() ? <Row label={strings.detail.product} value={order.product.trim()} /> : null}
+          {order.quantity != null ? <Row label={strings.detail.quantity} value={String(order.quantity)} /> : null}
+          <Row
+            label={strings.detail.deliveryFee}
+            value={deliveryFee > 0 ? formatMoney(deliveryFee) : strings.detail.free}
+          />
           <Row label={strings.detail.total} value={formatMoney(order.total)} strong />
         </Card>
       </Section>
 
       {order.note?.trim() ? (
-        <Section index={3} title={strings.detail.note}>
+        <Section index={4} title={strings.detail.note}>
           <Card>
             <Text style={styles.note}>{order.note.trim()}</Text>
           </Card>
         </Section>
       ) : null}
 
-      <Section index={4} title={strings.detail.updateStatus}>
+      <Section index={5} title={strings.detail.updateStatus}>
         <StatusPicker
           value={selected}
           onChange={(status) => {
@@ -184,12 +214,38 @@ function Card({ children }: { children: ReactNode }) {
   return <View style={styles.card}>{children}</View>;
 }
 
-function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+type RowProps = {
+  label: string;
+  value: string;
+  strong?: boolean;
+  /** Makes the value a link (e.g. tap the phone number to call). */
+  onPress?: () => void;
+  accessibilityHint?: string;
+};
+
+function Row({ label, value, strong, onPress, accessibilityHint }: RowProps) {
+  const labelNode = (
+    <Text style={[styles.rowLabel, strong && styles.rowStrong]} numberOfLines={2}>
+      {label}
+    </Text>
+  );
+  if (onPress) {
+    return (
+      <PressableScale
+        scaleTo={0.98}
+        onPress={onPress}
+        accessibilityRole="link"
+        accessibilityLabel={`${label}: ${value}`}
+        accessibilityHint={accessibilityHint}
+        style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
+        {labelNode}
+        <Text style={[styles.rowValue, styles.rowLink]}>{value}</Text>
+      </PressableScale>
+    );
+  }
   return (
     <View style={styles.row}>
-      <Text style={[styles.rowLabel, strong && styles.rowStrong]} numberOfLines={2}>
-        {label}
-      </Text>
+      {labelNode}
       <Text style={[styles.rowValue, strong && styles.rowStrong]} selectable>
         {value}
       </Text>
@@ -242,6 +298,8 @@ const styles = StyleSheet.create({
   rowLabel: { ...type.body, flex: 1, color: colors.textMuted },
   rowValue: { ...type.body, color: colors.text, textAlign: 'right', flexShrink: 1 },
   rowStrong: { ...type.bodyStrong, color: colors.text },
+  rowLink: { color: colors.primary, fontWeight: '600' },
+  rowPressed: { opacity: 0.6 },
   note: { ...type.body, lineHeight: 20, color: colors.text, paddingVertical: 10 },
   banner: { borderRadius: radius.control, paddingHorizontal: 14, paddingVertical: 12 },
   bannerText: { ...type.body, fontWeight: '600' },
